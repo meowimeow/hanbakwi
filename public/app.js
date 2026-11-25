@@ -17,7 +17,7 @@ const CAMPUS = { lat: 36.9707, lng: 127.8720 }; // 국립한국교통대학교
 let netP = null, net = null;
 const loadNet = () => netP ??= fetch('./roads.json').then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => (net = new Network(d))).catch(e => { netP = null; throw e; });
 loadNet().catch(() => {});
-const OUTSIDE = '지금은 대소원면(교통대 주변)에서만 달릴 수 있어요. 구역 안으로 이동해 주세요.';
+const OUTSIDE = '지금은 교통대 주변에서만 달릴 수 있어요. 구역 안으로 이동해 주세요.';
 
 function h(tag, props = {}, ...kids) {
   const e = document.createElement(tag);
@@ -138,18 +138,30 @@ function aiTab(body) {
   if (!STATIC) fetch('./api/ai').then(r => r.json()).then(r => { form.hidden = !r.ready; }).catch(() => {});
 }
 async function makeRoute(pts, name) {
-  show('setup', h('h1', {}, name), h('p', { class: 'msg', role: 'status' }, '대소원면 도로에서 가장 닮은 코스를 찾고 있어요.'), h('button', { class: 'ghost', onclick: () => pickDraw() }, '취소'));
+  show('setup', h('h1', {}, name), h('p', { class: 'msg', role: 'status' }, '교통대 주변 도로에서 가장 닮은 코스를 찾고 있어요.'), h('button', { class: 'ghost', onclick: () => pickDraw() }, '취소'));
   const token = app.firstChild; let r = null, err = '이 그림과 길이에 맞는 도로를 찾지 못했어요. 길이를 바꾸거나 더 단순하게 그려 보세요.';
   try { await loadNet(); await new Promise(r => setTimeout(r, 30)); r = await net.fit(pts, drawSize); } catch (e) { console.error(e); err = '도로 정보를 불러오지 못했어요. 인터넷을 확인해 주세요.'; }
   if (app.firstChild !== token) return;
   if (!r) return show('setup', h('h1', {}, name), h('p', { class: 'msg' }, err), h('button', { class: 'go', onclick: () => pickDraw() }, '다시 고르기'));
-  setup('draw', { name, ids: r.ids, route: net.latlng(r.ids), sim: r.sim, len: r.len, pts });
+  setup('draw', { name, ids: r.ids, route: net.latlng(r.ids), sim: r.sim, len: r.len, pts, placed: r.placed });
 }
 
-const normalizeThumb = pts => { const xs = pts.map(p => p.x), ys = pts.map(p => p.y), a = Math.min(...xs), b = Math.min(...ys), k = 100 / Math.max(Math.max(...xs) - a, Math.max(...ys) - b); return pts.map(p => ({ x: (p.x - a) * k, y: (p.y - b) * k })); };
+// 원래 그림 / 실제 경로 / 둘을 같은 자리에 겹친 그림. lines는 교통대 기준 좌표(m)의 선들
+function compare(art, lines, label) {
+  const NS = 'http://www.w3.org/2000/svg', pts = [...art.placed, ...lines.flat()], xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, hh = Math.max(...ys) - y0, k = 100 / Math.max(w, hh, 1);
+  const at = l => toSvg(l.map(p => ({ x: (p.x - x0) * k + (100 - w * k) / 2, y: (p.y - y0) * k + (100 - hh * k) / 2 })));
+  const ran = lines.filter(l => l.length > 1).map(at).join('');
+  const panel = (caption, ...ds) => {
+    const g = document.createElementNS(NS, 'svg'); g.setAttribute('viewBox', '-8 -8 116 116'); g.setAttribute('role', 'img'); g.setAttribute('aria-label', caption);
+    for (const [d, c] of ds) { const e = document.createElementNS(NS, 'path'); e.setAttribute('d', d); e.setAttribute('class', c); g.append(e); }
+    return h('figure', {}, g, h('figcaption', {}, caption));
+  };
+  return h('div', { class: 'compare' }, panel('원래 그림', [at(art.placed), 'orig']), panel(label, [ran, 'p']), panel('겹쳐 보기', [at(art.placed), 'orig'], [ran, 'p']));
+}
 function setup(mode, art) {
   const opt = { mode };
-  if (mode === 'draw') Object.assign(opt, { ids: art.ids, route: art.route, name: art.name });
+  if (mode === 'draw') Object.assign(opt, { ids: art.ids, route: art.route, name: art.name, art });
   if (mode === 'pace') Object.assign(opt, { target: 1000 });
   let here = null;
   const where = h('p', { class: 'soft', role: 'status' });
@@ -170,7 +182,7 @@ function setup(mode, art) {
   };
   const go = h('button', { class: 'go', onclick: () => ready() && run(opt, false, here) }, '달리기 시작');
   show('setup', h('div', { class: 'top' }, h('h1', {}, art?.name ?? MODES[mode][0]), h('button', { onclick: home }, '닫기')), h('p', { class: 'soft' }, MODES[mode][1]),
-    mode === 'draw' && [h('div', { class: 'match' }, svg(toSvg(normalizeThumb(art.pts)), '-6 -6 112 112'), h('div', {}, h('b', {}, `${(art.len / 1000).toFixed(1)}km 코스`), h('div', { class: 'soft' }, `도안과 닮음 ${art.sim}점. 모든 구간이 지도에 있는 길이에요.`))),
+    mode === 'draw' && [compare(art, [art.route.map(p => toXY(p, CAMPUS))], '도로 코스'), h('div', { class: 'match' }, h('div', {}, h('b', {}, `${(art.len / 1000).toFixed(1)}km 코스`), h('div', { class: 'soft' }, `도안과 닮음 ${art.sim}점. 모든 구간이 지도에 있는 길이에요.`))),
       art.sim < 50 && h('p', { class: 'msg' }, '이 동네 길로는 모양이 많이 달라져요. 다른 길이나 그림을 골라 보세요.'),
       h('div', { id: 'map' }), h('button', { class: 'ghost', onclick: () => pickDraw() }, '다른 그림 고르기')], where,
     mode === 'pace' && [h('label', {}, '거리'), seg([[1000, '1km'], [3000, '3km'], [5000, '5km']], opt.target, v => { opt.target = v; min.value = v / 1000 * 7; sec.value = 0; }),
@@ -249,7 +261,7 @@ function run(opt, demo, from) {
       while (!store.set('log', list) && list.length > 1) list.pop();
       if (r.ok && !STATIC) { const q = store.get('queue', []); q.push({ runId, uid: me.uid, name: me.name, crew: me.crew, opt: { mode: opt.mode, ids: opt.ids, target: opt.target, guess: opt.guess }, samples: t.raw.map(s => ({ ...s, lat: +s.lat.toFixed(6), lng: +s.lng.toFixed(6) })) }); if (!store.set('queue', q)) memory.push(q.at(-1)); }
     }
-    result(rec, demo);
+    result(rec, demo, opt.art);
   }
 }
 const memory = []; let flushing = null;
@@ -268,12 +280,12 @@ async function doFlush() { // 전송에 실패한 기록은 남겨 두었다가 
   return !left;
 }
 const unit = m => m === 'crew' ? 'km' : '점';
-function result(r, demo) {
+function result(r, demo, art) {
   const status = h('p', { class: 'msg', role: 'status' }, demo ? '가상 달리기라 순위와 내 기록에 남지 않아요.' : r.ok ? (STATIC ? '이 기기의 순위에 기록했어요.' : '순위에 올리는 중이에요.') : r.note);
   show('result', h('section', { class: 'bib' }, h('div', { class: 'num' }, r.mode === 'pace' && r.actual === undefined ? '-' : String(r.score), h('small', {}, unit(r.mode))), h('div', { class: 'soft' }, MODES[r.mode][0]),
     h('div', { class: 'who' }, h('span', {}, `${km(r.distance)}km`), h('span', {}, clock(r.elapsed)))),
     r.actual !== undefined && h('p', {}, `예상 ${clock(r.guess)}, 실제 ${clock(r.actual)}. ${Math.round(Math.abs(r.actual - r.guess))}초 차이예요.`),
-    demo && r.note && h('p', { class: 'soft' }, r.note), status, h('div', { id: 'map' }),
+    demo && r.note && h('p', { class: 'soft' }, r.note), status, art && compare(art, r.path.map(g => g.map(([lat, lng]) => toXY({ lat, lng }, CAMPUS))), '달린 길'), h('div', { id: 'map' }),
     h('button', { class: 'go', onclick: () => boardView(r.mode) }, '순위 보기'), h('button', { class: 'ghost', onclick: home }, '홈으로'));
   const pts = r.path.filter(g => g.length);
   if (pts.length) { makeMap(pts[0][0]); line('path', pts, PATH); if (map) map.fitBounds(layers.path.getBounds(), { padding: [24, 24], maxZoom: 17 }); }
