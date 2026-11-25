@@ -41,3 +41,7 @@ nav button{flex:1;max-width:160px;height:60px;color:var(--soft);font-weight:600}
 .thumbs .p{stroke-width:6}.match .p{stroke-width:6}
 .pad{display:block;width:100%;aspect-ratio:1;background:#fff;border-radius:14px;margin-top:14px;touch-action:none;cursor:crosshair}.pad .p{stroke-width:2}
 .match{display:flex;gap:14px;align-items:center;margin-top:8px}
+.compare{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.compare figure{margin:0;background:#fff;border-radius:10px;padding:6px 6px 8px;text-align:center}
+.compare svg{display:block;width:100%}.compare figcaption{font-size:14px;font-weight:600}
+.compare .p{stroke-width:3.5}.compare .orig{fill:none;stroke:var(--cobalt);stroke-width:3.5;stroke-linejoin:round}
