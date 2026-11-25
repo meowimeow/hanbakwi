@@ -1,0 +1,1 @@
+{"name":"hanbakwi","version":"0.1.0","private":true,"type":"module","scripts":{"start":"node server.js","test":"node --test test/*.test.js"},"dependencies":{"@anthropic-ai/sdk":"^1.14.0"}}

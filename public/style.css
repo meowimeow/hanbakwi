@@ -1,0 +1,43 @@
+:root{--sky:#dfe8f5;--paper:#fff;--ink:#14213d;--soft:#51607d;--cobalt:#2340e0;--line:#ff3f8e;--rule:#c3d0e4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sky);color:var(--ink);font:16px/1.5 "IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif;word-break:keep-all}
+#app{max-width:480px;margin:auto;min-height:100dvh;padding:calc(20px + env(safe-area-inset-top)) 16px calc(90px + env(safe-area-inset-bottom))}
+h1,h2,.num{font-family:"Black Han Sans","Apple SD Gothic Neo",sans-serif;font-weight:400;line-height:1.1;margin:0}
+h1{font-size:34px}h2{font-size:24px}p{margin:8px 0}.soft{color:var(--soft);font-size:14px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;min-height:44px}
+:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+/* 배번표 */
+.bib{position:relative;background:var(--paper);border-radius:4px;padding:30px 20px 18px;text-align:center;margin:0 0 24px}
+.bib:before,.bib:after{content:"";position:absolute;top:12px;width:10px;height:10px;border-radius:50%;background:var(--sky);box-shadow:inset 0 1px 2px #14213d55}
+.bib:before{left:14px}.bib:after{right:14px}
+.bib .num{font-size:96px;color:var(--cobalt)}.bib .num small{font-size:30px;margin-left:6px}
+.bib .who{font-weight:600;border-top:3px solid var(--cobalt);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center}
+.modes{display:grid;gap:2px;margin-top:12px}
+.mode{display:flex;gap:16px;align-items:center;text-align:left;background:var(--paper);padding:16px;width:100%}
+.mode:first-child{border-radius:14px 14px 0 0}.mode:last-child{border-radius:0 0 14px 14px}
+.mode svg{flex:0 0 52px}.mode b{font-size:18px;display:block}.mode span span{color:var(--soft);font-size:14px}
+svg .p{fill:none;stroke:var(--line);stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+.go{display:block;width:100%;background:var(--cobalt);color:#fff;font-weight:600;font-size:18px;padding:15px;border-radius:12px;margin-top:16px}
+.go.stop{background:var(--ink)}.ghost{display:block;width:100%;font-weight:600;color:var(--cobalt);margin-top:6px}
+.go:disabled{opacity:.45}
+label{display:block;font-weight:600;margin-top:16px}
+input{width:100%;padding:13px;border:2px solid var(--rule);border-radius:10px;background:#fff;margin-top:4px;font-size:16px}
+.time{display:flex;gap:8px;align-items:center}.time input{width:92px;text-align:center}
+.seg{display:flex;gap:6px;margin-top:8px}.seg button{flex:1;background:#fff;border-radius:10px;padding:8px 4px;font-weight:600;border:2px solid transparent}
+.seg button[aria-pressed=true]{border-color:var(--cobalt);color:var(--cobalt)}
+nav{position:fixed;z-index:1000;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--rule);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;max-width:160px;height:60px;color:var(--soft);font-weight:600}nav button[aria-current]{color:var(--cobalt);box-shadow:inset 0 3px var(--cobalt)}
+#map{height:300px;border-radius:14px;background:#cdd9ea;margin-top:14px;z-index:0}
+.running #map{height:52dvh;margin:-20px -16px 0;border-radius:0}
+.stats{display:flex;gap:24px;margin:18px 0 4px}.stats .num{font-size:52px}.stats .num small{font-size:20px}
+.msg{background:#fff;border-left:5px solid var(--line);padding:10px 14px;margin:12px 0;font-size:14px}
+.rank{list-style:none;margin:16px 0;padding:0;background:#fff;border-radius:14px;overflow:hidden}
+.rank li{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--sky)}
+.rank .pos{font-size:24px;min-width:30px;color:var(--cobalt)}.rank .grow{flex:1;min-width:0;overflow-wrap:anywhere}.rank .num{font-size:22px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.thumbs button{background:#fff;border-radius:10px;padding:10px 4px;font-weight:600;font-size:14px;display:grid;justify-items:center;gap:4px}
+.thumbs .p{stroke-width:6}.match .p{stroke-width:6}
+.pad{display:block;width:100%;aspect-ratio:1;background:#fff;border-radius:14px;margin-top:14px;touch-action:none;cursor:crosshair}.pad .p{stroke-width:2}
+.match{display:flex;gap:14px;align-items:center;margin-top:8px}
